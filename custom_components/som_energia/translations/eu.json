@@ -1,0 +1,58 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Aukeratu Som Energia tarifak",
+        "description": "Zein tarifa jarraitu nahi dituzun aukeratu. Gutxienez bat hautatu behar duzu.",
+        "data": {
+          "tariff_20td": "2.0TD Indexada",
+          "tariff_30td": "3.0TD Indexada",
+          "tariff_61td": "6.1TD Indexada",
+          "compensation": "Soberakinen konpentsazioa"
+        },
+        "data_description": {
+          "tariff_20td": "2.0TD tarifaren prezio indexatuak jarraitu",
+          "tariff_30td": "3.0TD tarifaren prezio indexatuak jarraitu",
+          "tariff_61td": "6.1TD tarifaren prezio indexatuak jarraitu",
+          "compensation": "Gain-ekoizpenaren konpentsazio prezioak jarraitu"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Ezin izan da Som Energia APIra konektatu. Egiaztatu internet konexioa eta saiatu berriro.",
+      "timeout_connect": "Som Energia APIra konektatzean denbora-muga gainditu da. Zerbitzua behin-behinean erabilgarri ez egon liteke.",
+      "no_tariff_selected": "Gutxienez tarifa bat hautatu behar duzu jarraitzeko."
+    },
+    "abort": {
+      "already_configured": "Tarifa konbinazio hori dagoeneko konfiguratuta dago."
+    }
+  },
+  "entity": {
+    "sensor": {
+      "current_price": {
+        "name": "Uneko prezioa"
+      },
+      "next_hour_price": {
+        "name": "Hurrengo orduko prezioa"
+      },
+      "today_min_price": {
+        "name": "Gaurko gutxieneko prezioa"
+      },
+      "today_max_price": {
+        "name": "Gaurko gehieneko prezioa"
+      },
+      "today_avg_price": {
+        "name": "Gaurko batez besteko prezioa"
+      },
+      "tomorrow_min_price": {
+        "name": "Bihar gutxieneko prezioa"
+      },
+      "tomorrow_max_price": {
+        "name": "Bihar gehieneko prezioa"
+      },
+      "tomorrow_avg_price": {
+        "name": "Bihar batez besteko prezioa"
+      }
+    }
+  }
+}

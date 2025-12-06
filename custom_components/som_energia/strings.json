@@ -1,0 +1,58 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Select Som Energia tariffs",
+        "description": "Choose which tariffs you want to track. You must select at least one.",
+        "data": {
+          "tariff_20td": "2.0TD Indexada",
+          "tariff_30td": "3.0TD Indexada",
+          "tariff_61td": "6.1TD Indexada",
+          "compensation": "Compensació d'excedents"
+        },
+        "data_description": {
+          "tariff_20td": "Track indexed prices for 2.0TD tariff",
+          "tariff_30td": "Track indexed prices for 3.0TD tariff",
+          "tariff_61td": "Track indexed prices for 6.1TD tariff",
+          "compensation": "Track compensation prices for surplus energy"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Failed to connect to the Som Energia API. Please check your internet connection and try again.",
+      "timeout_connect": "Timeout connecting to the Som Energia API. The service might be temporarily unavailable.",
+      "no_tariff_selected": "You must select at least one tariff to continue."
+    },
+    "abort": {
+      "already_configured": "This combination of tariffs is already configured."
+    }
+  },
+  "entity": {
+    "sensor": {
+      "current_price": {
+        "name": "Current price"
+      },
+      "next_hour_price": {
+        "name": "Next hour price"
+      },
+      "today_min_price": {
+        "name": "Today minimum price"
+      },
+      "today_max_price": {
+        "name": "Today maximum price"
+      },
+      "today_avg_price": {
+        "name": "Today average price"
+      },
+      "tomorrow_min_price": {
+        "name": "Tomorrow minimum price"
+      },
+      "tomorrow_max_price": {
+        "name": "Tomorrow maximum price"
+      },
+      "tomorrow_avg_price": {
+        "name": "Tomorrow average price"
+      }
+    }
+  }
+}

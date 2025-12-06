@@ -1,0 +1,58 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Selecciona les tarifes de Som Energia",
+        "description": "Tria les tarifes que vols seguir. Has de seleccionar-ne almenys una.",
+        "data": {
+          "tariff_20td": "2.0TD Indexada",
+          "tariff_30td": "3.0TD Indexada",
+          "tariff_61td": "6.1TD Indexada",
+          "compensation": "Compensació d'excedents"
+        },
+        "data_description": {
+          "tariff_20td": "Segueix els preus indexats de la tarifa 2.0TD",
+          "tariff_30td": "Segueix els preus indexats de la tarifa 3.0TD",
+          "tariff_61td": "Segueix els preus indexats de la tarifa 6.1TD",
+          "compensation": "Segueix els preus de compensació per excedents d'energia"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "No s'ha pogut connectar amb l'API de Som Energia. Comprova la connexió a Internet i torna-ho a provar.",
+      "timeout_connect": "La connexió amb l'API de Som Energia ha excedit el temps. El servei pot estar temporalment no disponible.",
+      "no_tariff_selected": "Has de seleccionar almenys una tarifa per continuar."
+    },
+    "abort": {
+      "already_configured": "Aquesta combinació de tarifes ja està configurada."
+    }
+  },
+  "entity": {
+    "sensor": {
+      "current_price": {
+        "name": "Preu actual"
+      },
+      "next_hour_price": {
+        "name": "Preu de la propera hora"
+      },
+      "today_min_price": {
+        "name": "Preu mínim d'avui"
+      },
+      "today_max_price": {
+        "name": "Preu màxim d'avui"
+      },
+      "today_avg_price": {
+        "name": "Preu mitjà d'avui"
+      },
+      "tomorrow_min_price": {
+        "name": "Preu mínim de demà"
+      },
+      "tomorrow_max_price": {
+        "name": "Preu màxim de demà"
+      },
+      "tomorrow_avg_price": {
+        "name": "Preu mitjà de demà"
+      }
+    }
+  }
+}

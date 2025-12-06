@@ -1,0 +1,94 @@
+rules:
+  # Bronze
+  action-setup:
+    status: exempt
+    comment: Integration does not register custom actions.
+  appropriate-polling: done
+  brands: done
+  common-modules:
+    status: exempt
+    comment: No shared modules needed for this integration.
+  config-flow-test-coverage: done
+  config-flow: done
+  dependency-transparency: done
+  docs-actions:
+    status: exempt
+    comment: Integration does not register custom actions.
+  docs-high-level-description: todo
+  docs-installation-instructions: todo
+  docs-removal-instructions: todo
+  entity-event-setup:
+    status: exempt
+    comment: Integration does not use event entities.
+  entity-unique-id: done
+  has-entity-name: done
+  runtime-data: done
+  test-before-configure: done
+  test-before-setup: done
+  unique-config-entry: done
+
+  # Silver
+  action-exceptions:
+    status: exempt
+    comment: Integration does not register custom actions.
+  config-entry-unloading: done
+  docs-configuration-parameters: todo
+  docs-installation-parameters: todo
+  entity-unavailable: done
+  integration-owner: done
+  log-when-unavailable:
+    status: exempt
+    comment: Integration preserves data on API failure, entities remain available.
+  parallel-updates:
+    status: exempt
+    comment: Coordinator-based integration with no parallel update configuration needed.
+  reauthentication-flow:
+    status: exempt
+    comment: No authentication required for public API.
+  test-coverage: done
+
+  # Gold
+  devices: done
+  diagnostics: todo
+  discovery-update-info:
+    status: exempt
+    comment: Integration does not support discovery.
+  discovery:
+    status: exempt
+    comment: Integration does not support discovery.
+  docs-data-update: todo
+  docs-examples: todo
+  docs-known-limitations: todo
+  docs-supported-devices: todo
+  docs-supported-functions: todo
+  docs-troubleshooting: todo
+  docs-use-cases: todo
+  dynamic-devices:
+    status: exempt
+    comment: Devices are static, based on selected tariffs at config time.
+  entity-category:
+    status: exempt
+    comment: All entities are primary (pricing information), no diagnostic entities.
+  entity-device-class:
+    status: exempt
+    comment: No appropriate device class for electricity pricing sensors.
+  entity-disabled-by-default:
+    status: exempt
+    comment: All sensors are equally relevant, none disabled by default.
+  entity-translations: done
+  exception-translations: todo
+  icon-translations: todo
+  reconfiguration-flow: todo
+  repair-issues: todo
+  stale-devices:
+    status: exempt
+    comment: Devices never become stale as they represent tariff types, not physical devices.
+
+  # Platinum
+  async-dependency:
+    status: exempt
+    comment: No external dependencies required.
+  inject-websession:
+    status: exempt
+    comment: No external dependencies requiring websession injection.
+  strict-typing: todo

@@ -1,0 +1,58 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Selecciona tarifas de Som Energia",
+        "description": "Escolle que tarifas queres seguir. Debes seleccionar polo menos unha.",
+        "data": {
+          "tariff_20td": "2.0TD Indexada",
+          "tariff_30td": "3.0TD Indexada",
+          "tariff_61td": "6.1TD Indexada",
+          "compensation": "Compensación de excedentes"
+        },
+        "data_description": {
+          "tariff_20td": "Seguir prezos indexados da tarifa 2.0TD",
+          "tariff_30td": "Seguir prezos indexados da tarifa 3.0TD",
+          "tariff_61td": "Seguir prezos indexados da tarifa 6.1TD",
+          "compensation": "Seguir prezos de compensación por excedentes de enerxía"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Non se puido conectar coa API de Som Energia. Comproba a conexión a Internet e ténteo de novo.",
+      "timeout_connect": "Excedeuse o tempo de conexión coa API de Som Energia. O servizo pode non estar dispoñible temporalmente.",
+      "no_tariff_selected": "Debes seleccionar polo menos unha tarifa para continuar."
+    },
+    "abort": {
+      "already_configured": "Esta combinación de tarifas xa está configurada."
+    }
+  },
+  "entity": {
+    "sensor": {
+      "current_price": {
+        "name": "Prezo actual"
+      },
+      "next_hour_price": {
+        "name": "Prezo da seguinte hora"
+      },
+      "today_min_price": {
+        "name": "Prezo mínimo de hoxe"
+      },
+      "today_max_price": {
+        "name": "Prezo máximo de hoxe"
+      },
+      "today_avg_price": {
+        "name": "Prezo medio de hoxe"
+      },
+      "tomorrow_min_price": {
+        "name": "Prezo mínimo de mañá"
+      },
+      "tomorrow_max_price": {
+        "name": "Prezo máximo de mañá"
+      },
+      "tomorrow_avg_price": {
+        "name": "Prezo medio de mañá"
+      }
+    }
+  }
+}
