@@ -8,7 +8,7 @@ Custom integration that fetches indexed electricity prices and surplus compensat
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="media/integration.png" />
   <source media="(prefers-color-scheme: light)" srcset="media/integration_light.png" />
-  <img src="media/integration.png" alt="Integration detail view" width="600"/>
+  <img src="media/integration.png" alt="Integration detail view" />
 </picture>
 
 ## Features
@@ -38,7 +38,7 @@ Custom integration that fetches indexed electricity prices and surplus compensat
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="media/selector.png" />
   <source media="(prefers-color-scheme: light)" srcset="media/selector_light.png" />
-  <img src="media/selector.png" alt="Config flow with tariff selection" width="600"/>
+  <img src="media/selector.png" alt="Config flow with tariff selection" />
 </picture>
 
 1. In Home Assistant, go to *Settings → Devices & Services → Add Integration* and search for **Som Energia**.
@@ -49,7 +49,7 @@ Custom integration that fetches indexed electricity prices and surplus compensat
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="media/sensors.png" />
   <source media="(prefers-color-scheme: light)" srcset="media/sensors_light.png" />
-  <img src="media/sensors.png" alt="Sensor entities per tariff" width="600"/>
+  <img src="media/sensors.png" alt="Sensor entities per tariff" />
 </picture>
 
 - Each selected tariff/compensation creates its own device grouping with 8 sensors:
