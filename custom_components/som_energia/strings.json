@@ -30,28 +30,36 @@
   "entity": {
     "sensor": {
       "current_price": {
-        "name": "Current price"
+        "name": "Current price",
+        "icon": "mdi:currency-eur"
       },
       "next_hour_price": {
-        "name": "Next hour price"
+        "name": "Next hour price",
+        "icon": "mdi:currency-eur"
       },
       "today_min_price": {
-        "name": "Today minimum price"
+        "name": "Today minimum price",
+        "icon": "mdi:currency-eur"
       },
       "today_max_price": {
-        "name": "Today maximum price"
+        "name": "Today maximum price",
+        "icon": "mdi:currency-eur"
       },
       "today_avg_price": {
-        "name": "Today average price"
+        "name": "Today average price",
+        "icon": "mdi:currency-eur"
       },
       "tomorrow_min_price": {
-        "name": "Tomorrow minimum price"
+        "name": "Tomorrow minimum price",
+        "icon": "mdi:currency-eur"
       },
       "tomorrow_max_price": {
-        "name": "Tomorrow maximum price"
+        "name": "Tomorrow maximum price",
+        "icon": "mdi:currency-eur"
       },
       "tomorrow_avg_price": {
-        "name": "Tomorrow average price"
+        "name": "Tomorrow average price",
+        "icon": "mdi:currency-eur"
       }
     }
   }
