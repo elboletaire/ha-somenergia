@@ -29,8 +29,8 @@ GEO_ZONE: Final = "PENINSULA"
 
 # Data Update Configuration
 DAILY_UPDATE_TIME: Final = time(18, 0, 0)  # 18:00 UTC
-RETRY_INTERVAL_MINUTES: Final = 30
-MAX_RETRIES: Final = 3
+RETRY_INTERVAL_MINUTES: Final = 1
+MAX_RETRIES: Final = 5
 
 # Expected data points (17 days * 24 hours)
 EXPECTED_DATA_POINTS: Final = 408

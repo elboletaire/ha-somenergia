@@ -175,11 +175,17 @@ class SomEnergiaPricingCoordinator(DataUpdateCoordinator[CoordinatorData]):
             return new_data
 
         except (aiohttp.ClientError, asyncio.TimeoutError) as err:
-            # Preserve old data on failure
+            error_message = self._format_update_error(err)
+
+            # Keep previously fetched data available while we retry
             if self.data is not None:
-                _LOGGER.warning("Failed to fetch data, preserving previous values: %s", err)
-                return self.data
-            raise UpdateFailed(f"Error communicating with API: {err}") from err
+                self._log_update_error(
+                    f"{error_message}; keeping previously fetched prices"
+                )
+            else:
+                self._log_update_error(error_message)
+
+            raise UpdateFailed(error_message) from err
 
     async def _fetch_and_parse_tariff(self, tariff: str) -> PriceData:
         """Fetch and parse tariff price data."""
@@ -238,6 +244,25 @@ class SomEnergiaPricingCoordinator(DataUpdateCoordinator[CoordinatorData]):
             last_date=last_date_utc,
         )
 
+    def _format_update_error(self, err: Exception) -> str:
+        """Format an API update error for logging."""
+        if isinstance(err, aiohttp.ClientResponseError):
+            status_text = err.message or err.reason or "unknown error"
+            return f"API request failed ({err.status}): {status_text}"
+        if isinstance(err, asyncio.TimeoutError):
+            return "API request timed out"
+        return f"Error communicating with API: {err}"
+
+    def _log_update_error(self, message: str) -> None:
+        """Log an API update error with retry context."""
+        _LOGGER.error(
+            "%s; retrying in %s minute(s) (attempt %s/%s)",
+            message,
+            RETRY_INTERVAL_MINUTES,
+            self._retry_count + 1,
+            MAX_RETRIES,
+        )
+
     @callback
     def _schedule_daily_update(self) -> None:
         """Schedule daily data fetch at 18:00 UTC."""
@@ -268,26 +293,55 @@ class SomEnergiaPricingCoordinator(DataUpdateCoordinator[CoordinatorData]):
             self.hass, self._async_hourly_refresh, minute=0, second=0
         )
 
+    @callback
+    def _schedule_retry(self) -> None:
+        """Schedule a retry after a failed update."""
+        if self._retry_count >= MAX_RETRIES:
+            _LOGGER.error(
+                "Maximum retry attempts reached (%s). Next attempt at scheduled daily update; "
+                "try reloading the Som Energia integration if this persists.",
+                MAX_RETRIES,
+            )
+            self._retry_count = 0
+            self._schedule_daily_update()
+            return
+
+        retry_time = dt_util.utcnow() + timedelta(minutes=RETRY_INTERVAL_MINUTES)
+
+        if self._retry_update_listener:
+            self._retry_update_listener()
+
+        self._retry_update_listener = async_track_point_in_time(
+            self.hass, self._async_daily_update, retry_time
+        )
+        _LOGGER.info(
+            "Retrying data fetch in %s minute(s) (attempt %s/%s)",
+            RETRY_INTERVAL_MINUTES,
+            self._retry_count + 1,
+            MAX_RETRIES,
+        )
+        self._retry_count += 1
+
     async def _async_daily_update(self, _now: datetime) -> None:
         """Handle daily data fetch."""
         # Clear any pending retry handle that just fired
+        if self._retry_update_listener:
+            self._retry_update_listener()
         self._retry_update_listener = None
 
-        await self.async_refresh()
+        try:
+            await self.async_refresh()
+        except UpdateFailed:
+            # Error already logged in _async_update_data, schedule retry
+            pass
+        except Exception as err:  # pragma: no cover - defensive logging
+            _LOGGER.exception("Unexpected error while refreshing Som Energia data: %s", err)
 
-        # Schedule retry if failed
-        if self._retry_count < MAX_RETRIES and not self.last_update_success:
-            self._retry_count += 1
-            retry_time = dt_util.utcnow() + timedelta(minutes=RETRY_INTERVAL_MINUTES)
-            if self._retry_update_listener:
-                self._retry_update_listener()
-
-            self._retry_update_listener = async_track_point_in_time(
-                self.hass, self._async_daily_update, retry_time
-            )
-        else:
-            # Schedule next daily update
+        if self.last_update_success:
             self._schedule_daily_update()
+            return
+
+        self._schedule_retry()
 
     async def _async_hourly_refresh(self, _now: datetime) -> None:
         """Refresh entity states without fetching data."""
@@ -296,12 +350,9 @@ class SomEnergiaPricingCoordinator(DataUpdateCoordinator[CoordinatorData]):
 
     async def async_start(self) -> None:
         """Start the coordinator scheduling."""
-        # Fetch data immediately on startup
-        await self.async_refresh()
-
         # Schedule recurring updates
-        self._schedule_daily_update()
         self._schedule_hourly_refresh()
+        await self._async_daily_update(dt_util.utcnow())
 
     @callback
     def async_stop(self) -> None:
