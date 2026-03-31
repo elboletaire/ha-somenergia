@@ -36,6 +36,7 @@ from .const import (
     SENSOR_TOMORROW_MIN_PRICE,
 )
 from .coordinator import CoordinatorData, PriceData, SomEnergiaPricingCoordinator
+from .price_timeline import MADRID_TZ
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -58,39 +59,39 @@ def _next_hour_price(data: PriceData, now: datetime) -> float | None:
 
 def _today_min_price(data: PriceData, now: datetime) -> float | None:
     """Get today's minimum price."""
-    prices = data.get_prices_for_date(now.date())
+    prices = data.get_prices_for_date(now.astimezone(MADRID_TZ).date())
     return min(prices) if prices else None
 
 
 def _today_max_price(data: PriceData, now: datetime) -> float | None:
     """Get today's maximum price."""
-    prices = data.get_prices_for_date(now.date())
+    prices = data.get_prices_for_date(now.astimezone(MADRID_TZ).date())
     return max(prices) if prices else None
 
 
 def _today_avg_price(data: PriceData, now: datetime) -> float | None:
     """Get today's average price."""
-    prices = data.get_prices_for_date(now.date())
+    prices = data.get_prices_for_date(now.astimezone(MADRID_TZ).date())
     return round(statistics.mean(prices), 5) if prices else None
 
 
 def _tomorrow_min_price(data: PriceData, now: datetime) -> float | None:
     """Get tomorrow's minimum price."""
-    tomorrow = now.date() + timedelta(days=1)
+    tomorrow = now.astimezone(MADRID_TZ).date() + timedelta(days=1)
     prices = data.get_prices_for_date(tomorrow)
     return min(prices) if prices else None
 
 
 def _tomorrow_max_price(data: PriceData, now: datetime) -> float | None:
     """Get tomorrow's maximum price."""
-    tomorrow = now.date() + timedelta(days=1)
+    tomorrow = now.astimezone(MADRID_TZ).date() + timedelta(days=1)
     prices = data.get_prices_for_date(tomorrow)
     return max(prices) if prices else None
 
 
 def _tomorrow_avg_price(data: PriceData, now: datetime) -> float | None:
     """Get tomorrow's average price."""
-    tomorrow = now.date() + timedelta(days=1)
+    tomorrow = now.astimezone(MADRID_TZ).date() + timedelta(days=1)
     prices = data.get_prices_for_date(tomorrow)
     return round(statistics.mean(prices), 5) if prices else None
 

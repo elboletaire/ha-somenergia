@@ -5,10 +5,9 @@ from __future__ import annotations
 import asyncio
 from collections.abc import Callable
 from dataclasses import dataclass
-from datetime import date, datetime, timedelta
+from datetime import datetime, timedelta
 import logging
 from typing import Any
-from zoneinfo import ZoneInfo
 
 import aiohttp
 import async_timeout
@@ -32,7 +31,6 @@ from .const import (
     CONF_TARIFF_61TD,
     DAILY_UPDATE_TIME,
     DOMAIN,
-    EXPECTED_DATA_POINTS,
     GEO_ZONE,
     MAX_RETRIES,
     RETRY_INTERVAL_MINUTES,
@@ -40,62 +38,22 @@ from .const import (
     TARIFF_30TD,
     TARIFF_61TD,
 )
+from .price_timeline import PriceTimeline, parse_api_datetime
 
 _LOGGER = logging.getLogger(__name__)
 
 
-@dataclass
-class PriceData:
-    """Container for hourly price data."""
-
-    timestamps: list[datetime]
-    prices: list[float | None]
-    first_date: datetime
-    last_date: datetime
-
-    def get_price_at(self, dt: datetime) -> float | None:
-        """Get price for specific datetime (rounded to hour in Madrid timezone)."""
-        # API data represents Madrid local hours, calculate offset from first_date
-        madrid_tz = ZoneInfo("Europe/Madrid")
-
-        # Convert input time to Madrid timezone and round to hour
-        dt_madrid = dt.astimezone(madrid_tz)
-        target_madrid = dt_madrid.replace(minute=0, second=0, microsecond=0)
-
-        # Convert first_date to Madrid timezone
-        first_date_madrid = self.first_date.astimezone(madrid_tz)
-
-        # Calculate hours difference
-        hours_diff = int((target_madrid - first_date_madrid).total_seconds() / 3600)
-
-        # API quirk: first_date appears to be 1 hour before the actual first price period
-        # Example: first_date "01:00:00" but prices[0] is actually for 00:00-01:00
-        # This explains why last_date ends at "00:00:00" (midnight after last full day)
-        # We adjust by adding 1 to align with the actual price array indexing
-        hours_diff += 1
-
-        # Check bounds and return price
-        if 0 <= hours_diff < len(self.prices):
-            return self.prices[hours_diff]
-        return None
-
-    def get_prices_for_date(self, target_date: date) -> list[float]:
-        """Get all non-null prices for a specific date."""
-        return [
-            price
-            for ts, price in zip(self.timestamps, self.prices, strict=False)
-            if ts.date() == target_date and price is not None
-        ]
+PriceData = PriceTimeline
 
 
 @dataclass
 class CoordinatorData:
     """Data structure returned by coordinator."""
 
-    tariff_20td: PriceData | None = None
-    tariff_30td: PriceData | None = None
-    tariff_61td: PriceData | None = None
-    compensation: PriceData | None = None
+    tariff_20td: PriceTimeline | None = None
+    tariff_30td: PriceTimeline | None = None
+    tariff_61td: PriceTimeline | None = None
+    compensation: PriceTimeline | None = None
     last_update: datetime | None = None
 
 
@@ -195,25 +153,13 @@ class SomEnergiaPricingCoordinator(DataUpdateCoordinator[CoordinatorData]):
         curves = response["data"]["curves"]
         price_array = curves["price_euros_kwh"]
 
-        # Parse timestamps - API returns naive datetimes in Europe/Madrid timezone
-        madrid_tz = ZoneInfo("Europe/Madrid")
-        first_date_naive = dt_util.parse_datetime(response["data"]["first_date"])
-        first_date = first_date_naive.replace(tzinfo=madrid_tz)
-        first_date_utc = dt_util.as_utc(first_date)
-
-        timestamps = [
-            first_date_utc + timedelta(hours=i) for i in range(EXPECTED_DATA_POINTS)
-        ]
-
-        last_date_naive = dt_util.parse_datetime(response["data"]["last_date"])
-        last_date = last_date_naive.replace(tzinfo=madrid_tz)
-        last_date_utc = dt_util.as_utc(last_date)
+        first_date = parse_api_datetime(response["data"]["first_date"])
+        last_date = parse_api_datetime(response["data"]["last_date"])
 
         return PriceData(
-            timestamps=timestamps,
             prices=price_array,
-            first_date=first_date_utc,
-            last_date=last_date_utc,
+            first_date=first_date,
+            last_date=last_date,
         )
 
     async def _fetch_and_parse_compensation(self) -> PriceData:
@@ -223,25 +169,13 @@ class SomEnergiaPricingCoordinator(DataUpdateCoordinator[CoordinatorData]):
         curves = response["data"]["curves"]
         price_array = curves["compensation_euros_kwh"]  # Different field name
 
-        # Parse timestamps - API returns naive datetimes in Europe/Madrid timezone
-        madrid_tz = ZoneInfo("Europe/Madrid")
-        first_date_naive = dt_util.parse_datetime(response["data"]["first_date"])
-        first_date = first_date_naive.replace(tzinfo=madrid_tz)
-        first_date_utc = dt_util.as_utc(first_date)
-
-        timestamps = [
-            first_date_utc + timedelta(hours=i) for i in range(EXPECTED_DATA_POINTS)
-        ]
-
-        last_date_naive = dt_util.parse_datetime(response["data"]["last_date"])
-        last_date = last_date_naive.replace(tzinfo=madrid_tz)
-        last_date_utc = dt_util.as_utc(last_date)
+        first_date = parse_api_datetime(response["data"]["first_date"])
+        last_date = parse_api_datetime(response["data"]["last_date"])
 
         return PriceData(
-            timestamps=timestamps,
             prices=price_array,
-            first_date=first_date_utc,
-            last_date=last_date_utc,
+            first_date=first_date,
+            last_date=last_date,
         )
 
     def _format_update_error(self, err: Exception) -> str:
