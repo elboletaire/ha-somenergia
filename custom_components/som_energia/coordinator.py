@@ -5,7 +5,7 @@ from __future__ import annotations
 import asyncio
 from collections.abc import Callable
 from dataclasses import dataclass
-from datetime import datetime, timedelta
+from datetime import date, datetime, timedelta
 import logging
 from typing import Any
 
@@ -38,6 +38,7 @@ from .const import (
     TARIFF_30TD,
     TARIFF_61TD,
 )
+from . import omie
 from .price_timeline import PriceTimeline, parse_api_datetime
 
 _LOGGER = logging.getLogger(__name__)
@@ -130,6 +131,9 @@ class SomEnergiaPricingCoordinator(DataUpdateCoordinator[CoordinatorData]):
             new_data.last_update = dt_util.utcnow()
             self._retry_count = 0  # Reset on success
 
+            # Retry when any enabled endpoint lacks usable prices for today
+            self._check_today_data(new_data)
+
             return new_data
 
         except (aiohttp.ClientError, asyncio.TimeoutError) as err:
@@ -163,11 +167,46 @@ class SomEnergiaPricingCoordinator(DataUpdateCoordinator[CoordinatorData]):
         )
 
     async def _fetch_and_parse_compensation(self) -> PriceData:
-        """Fetch and parse compensation price data."""
+        """Fetch and parse compensation price data with OMIE fallback."""
+        today = date.today()
+        som_data: PriceData | None = None
+        som_error: Exception | None = None
+
+        # Try Som Energia first
+        try:
+            som_data = await self._fetch_compensation_from_som()
+            if som_data.has_usable_prices_for_date(today):
+                return som_data
+            _LOGGER.info(
+                "Som Energia compensation lacks today prices; trying OMIE fallback"
+            )
+        except (aiohttp.ClientError, asyncio.TimeoutError) as err:
+            som_error = err
+            _LOGGER.debug(
+                "Som Energia compensation fetch failed: %s; trying OMIE fallback", err
+            )
+
+        # Fall back to OMIE
+        omie_data = await omie.fetch_omie_compensation(
+            self._client._session,  # noqa: SLF001
+        )
+        if omie_data is not None:
+            _LOGGER.info("Using OMIE compensation data as fallback")
+            return omie_data
+
+        # Both failed: return Som data if we have it (may lack today),
+        # otherwise re-raise the original error
+        if som_data is not None:
+            return som_data
+
+        raise som_error  # type: ignore[misc]
+
+    async def _fetch_compensation_from_som(self) -> PriceData:
+        """Fetch compensation from Som Energia and parse into PriceTimeline."""
         response = await self._client.fetch_compensation_prices()
 
         curves = response["data"]["curves"]
-        price_array = curves["compensation_euros_kwh"]  # Different field name
+        price_array = curves["compensation_euros_kwh"]
 
         first_date = parse_api_datetime(response["data"]["first_date"])
         last_date = parse_api_datetime(response["data"]["last_date"])
@@ -177,6 +216,36 @@ class SomEnergiaPricingCoordinator(DataUpdateCoordinator[CoordinatorData]):
             first_date=first_date,
             last_date=last_date,
         )
+
+    def _check_today_data(self, data: CoordinatorData) -> None:
+        """Raise UpdateFailed if any enabled endpoint lacks usable prices for today."""
+        today = date.today()
+        missing: list[str] = []
+
+        if self._enabled_tariffs.get(CONF_TARIFF_20TD) and not (
+            data.tariff_20td and data.tariff_20td.has_usable_prices_for_date(today)
+        ):
+            missing.append("tariff 2.0TD")
+
+        if self._enabled_tariffs.get(CONF_TARIFF_30TD) and not (
+            data.tariff_30td and data.tariff_30td.has_usable_prices_for_date(today)
+        ):
+            missing.append("tariff 3.0TD")
+
+        if self._enabled_tariffs.get(CONF_TARIFF_61TD) and not (
+            data.tariff_61td and data.tariff_61td.has_usable_prices_for_date(today)
+        ):
+            missing.append("tariff 6.1TD")
+
+        if self._enabled_tariffs.get(CONF_COMPENSATION) and not (
+            data.compensation and data.compensation.has_usable_prices_for_date(today)
+        ):
+            missing.append("compensation")
+
+        if missing:
+            raise UpdateFailed(
+                f"Today prices missing for: {', '.join(missing)}; retrying"
+            )
 
     def _format_update_error(self, err: Exception) -> str:
         """Format an API update error for logging."""

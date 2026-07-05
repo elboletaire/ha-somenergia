@@ -14,7 +14,8 @@ Custom integration that fetches indexed electricity prices and surplus compensat
 ## Features
 - 🔢 Up to **8 sensors per selected tariff/compensation device** (current, next hour, today min/max/avg, tomorrow min/max/avg); each tariff/compensation is grouped as its own device for clarity.
 - 📡 Supports multiple tariffs simultaneously (2.0TD, 3.0TD, 6.1TD) plus surplus compensation, each with their own 8-sensor set.
-- 🔄 Data fetched daily at 18:00 UTC with retry handling; hourly refresh pushes state updates without re-fetching.
+- 🔄 Data fetched daily at 18:00 UTC with retry handling; the coordinator continues fetching until every enabled endpoint has usable prices for today. Hourly refresh pushes state updates without re-fetching.
+- 🛡️ Surplus compensation falls back to OMIE (Spanish market operator) marginal prices when Som Energia's data lacks today's values.
 - ✅ Config flow validates API connectivity during setup.
 
 > Note: Other Som Energia integrations typically expose a single indexed price and a handful of sensors. This one groups a full 8-sensor set per tariff/compensation entry.
@@ -60,5 +61,6 @@ Custom integration that fetches indexed electricity prices and surplus compensat
 ## Notes
 - Minimum Home Assistant version: 2024.7.0 (uses `ConfigEntry.runtime_data`).
 - Integration type: cloud polling; no authentication required.
-- If the API temporarily fails, previous values are preserved and retries are scheduled automatically.
+- If the API temporarily fails or today's prices are not yet available, previous values are preserved and automatic retries continue until every enabled endpoint has usable data for today.
+- Compensation sensors use OMIE market data as a fallback when Som Energia has not yet published today's surplus compensation values.
 - Made with ❤️ for the Home Assistant community.

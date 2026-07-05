@@ -50,3 +50,7 @@ class PriceTimeline:
             for ts, price in zip(self.timestamps, self.prices, strict=False)
             if price is not None and ts.astimezone(MADRID_TZ).date() == target_date
         ]
+
+    def has_usable_prices_for_date(self, target_date: date) -> bool:
+        """Return True if there is at least one non-null price for the given Madrid date."""
+        return len(self.get_prices_for_date(target_date)) > 0
